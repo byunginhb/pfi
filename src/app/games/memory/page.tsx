@@ -67,7 +67,7 @@ export default function MemoryGame() {
     (updatedCards: Card[]) => {
       const allMatched = updatedCards.every((card) => card.isMatched);
       if (allMatched) {
-        const finalScore = score + 10; // 마지막 매칭의 점수를 포함
+        const finalScore = score + 10 + (timeLeft * 10); // 마지막 매칭의 점수를 포함
         setGameOver(true);
         if (bestScore === null || finalScore > bestScore) {
           setBestScore(finalScore);

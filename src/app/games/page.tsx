@@ -1,8 +1,14 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { BoltIcon, PuzzlePieceIcon } from '@heroicons/react/24/outline';
+import {
+  BoltIcon,
+  PuzzlePieceIcon,
+  CubeIcon,
+} from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
 const games = [
   {
@@ -23,6 +29,16 @@ const games = [
 ];
 
 export default function GamesPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const storedNickname = localStorage.getItem('nickname');
+    if (!storedNickname) {
+      router.replace('/');
+      return;
+    }
+  }, [router]);
+
   return (
     <div className='flex flex-col items-center justify-center min-h-[80vh]'>
       <motion.div
