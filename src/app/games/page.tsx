@@ -6,7 +6,8 @@ import Link from 'next/link';
 import {
   BoltIcon,
   PuzzlePieceIcon,
-  CubeIcon,
+  Square2StackIcon,
+  CloudIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -24,6 +25,20 @@ const games = [
     description: '짝을 맞춰 최고 점수를 기록하세요!',
     color: 'from-emerald-500 to-teal-500',
     icon: PuzzlePieceIcon,
+  },
+  {
+    id: '2048',
+    title: '2048',
+    description: '타일을 합쳐 2048을 만드세요!',
+    color: 'from-rose-500 to-pink-500',
+    icon: Square2StackIcon,
+  },
+  {
+    id: 'poop',
+    title: '똥피하기',
+    description: '하늘에서 떨어지는 똥을 피하세요!',
+    color: 'from-amber-500 to-orange-500',
+    icon: CloudIcon,
   },
   // 추후 더 많은 게임들이 추가될 예정
 ];
