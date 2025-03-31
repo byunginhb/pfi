@@ -67,7 +67,7 @@ export default function MemoryGame() {
     (updatedCards: Card[]) => {
       const allMatched = updatedCards.every((card) => card.isMatched);
       if (allMatched) {
-        const finalScore = score + 10 + (timeLeft * 10); // 마지막 매칭의 점수를 포함
+        const finalScore = score + 10 + timeLeft * 10; // 마지막 매칭의 점수를 포함
         setGameOver(true);
         if (bestScore === null || finalScore > bestScore) {
           setBestScore(finalScore);
@@ -75,7 +75,7 @@ export default function MemoryGame() {
         saveScore(finalScore);
       }
     },
-    [score, bestScore, saveScore]
+    [score, bestScore, saveScore, timeLeft]
   );
 
   // 게임 초기화
@@ -130,7 +130,8 @@ export default function MemoryGame() {
         gameOver ||
         isProcessing ||
         cards[cardId].isFlipped ||
-        cards[cardId].isMatched
+        cards[cardId].isMatched ||
+        timeLeft <= 0
       ) {
         return;
       }
@@ -150,7 +151,6 @@ export default function MemoryGame() {
 
         if (cards[firstCardId].emoji === cards[cardId].emoji) {
           // 매치 성공
-
           handleMatch(firstCardId, cardId);
         } else {
           // 매치 실패
@@ -163,7 +163,15 @@ export default function MemoryGame() {
         }
       }
     },
-    [cards, flippedCards, gameOver, isProcessing, flipCard, handleMatch]
+    [
+      cards,
+      flippedCards,
+      gameOver,
+      isProcessing,
+      flipCard,
+      handleMatch,
+      timeLeft,
+    ]
   );
 
   // 타이머 처리

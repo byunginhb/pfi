@@ -79,19 +79,20 @@ const moveBoard = (
 
   // 왼쪽으로 이동 및 병합
   for (let i = 0; i < size; i++) {
-    let row = newBoard[i].filter((cell) => cell !== null);
+    let row = newBoard[i].filter((cell) => cell !== null) as number[];
     for (let j = 0; j < row.length - 1; j++) {
       if (row[j] === row[j + 1]) {
-        row[j] = row[j]! * 2;
-        score += row[j]!;
-        row[j + 1] = null;
+        row[j] = row[j] * 2;
+        score += row[j];
+        row[j + 1] = 0;
       }
     }
-    row = row.filter((cell) => cell !== null);
-    while (row.length < size) {
-      row.push(null);
+    row = row.filter((cell) => cell !== 0);
+    const newRow: (number | null)[] = [...row];
+    while (newRow.length < size) {
+      newRow.push(null);
     }
-    newBoard[i] = row;
+    newBoard[i] = newRow;
   }
 
   // 보드를 원래 방향으로 회전
@@ -135,13 +136,6 @@ const isGameOver = (board: Board): boolean => {
 
   return true;
 };
-
-interface Score {
-  id: number;
-  score: number;
-  nickname: string;
-  createdAt: string;
-}
 
 export default function Game2048() {
   const router = useRouter();

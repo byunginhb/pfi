@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { saveScore } from '@/utils/score';
@@ -201,99 +201,64 @@ export default function PoopGamePage() {
     }
   };
 
-  // 키보드 이벤트 처리
-  useEffect(() => {
-    if (!isPlaying) return;
+  const updatePlayerPosition = useCallback((x: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const player = gameState.current.player;
-      const moveAmount = 20;
+    const rect = canvas.getBoundingClientRect();
+    const relativeX = x - rect.left;
 
-      switch (e.key) {
-        case 'ArrowLeft':
-          player.x = Math.max(0, player.x - moveAmount);
-          break;
-        case 'ArrowRight':
-          player.x = Math.min(
-            CANVAS_WIDTH - PLAYER_SIZE,
-            player.x + moveAmount
-          );
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying]);
+    gameState.current.player.x = Math.max(
+      0,
+      Math.min(CANVAS_WIDTH - PLAYER_SIZE, relativeX)
+    );
+  }, []);
 
   // 터치/마우스 이벤트 처리
   useEffect(() => {
-    if (!isPlaying || !canvasRef.current) return;
-
     const canvas = canvasRef.current;
-    let isDragging = false;
-    let lastX = 0;
+    if (!canvas || !isPlaying) return;
 
-    const handleStart = (x: number) => {
-      isDragging = true;
-      lastX = x;
+    const handleStart = (e: TouchEvent | MouseEvent) => {
+      e.preventDefault();
+      if (e instanceof TouchEvent) {
+        const touch = e.touches[0];
+        updatePlayerPosition(touch.clientX);
+      } else {
+        updatePlayerPosition(e.clientX);
+      }
     };
 
-    const handleMove = (x: number) => {
-      if (!isDragging) return;
-
-      const deltaX = x - lastX;
-      const player = gameState.current.player;
-      player.x = Math.max(
-        0,
-        Math.min(CANVAS_WIDTH - PLAYER_SIZE, player.x + deltaX)
-      );
-      lastX = x;
+    const handleMove = (e: TouchEvent | MouseEvent) => {
+      e.preventDefault();
+      if (e instanceof TouchEvent) {
+        const touch = e.touches[0];
+        updatePlayerPosition(touch.clientX);
+      } else {
+        updatePlayerPosition(e.clientX);
+      }
     };
 
     const handleEnd = () => {
-      isDragging = false;
+      // 터치나 마우스 이벤트 종료 시 필요한 처리
     };
 
-    // 터치 이벤트
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      handleStart(touch.clientX);
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      handleMove(touch.clientX);
-    });
-
+    canvas.addEventListener('touchstart', handleStart as EventListener);
+    canvas.addEventListener('touchmove', handleMove as EventListener);
     canvas.addEventListener('touchend', handleEnd);
-
-    // 마우스 이벤트
-    canvas.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      handleStart(e.clientX);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      e.preventDefault();
-      handleMove(e.clientX);
-    });
-
+    canvas.addEventListener('mousedown', handleStart as EventListener);
+    canvas.addEventListener('mousemove', handleMove as EventListener);
     canvas.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('mouseleave', handleEnd);
 
     return () => {
-      canvas.removeEventListener('touchstart', handleStart);
-      canvas.removeEventListener('touchmove', handleMove);
+      canvas.removeEventListener('touchstart', handleStart as EventListener);
+      canvas.removeEventListener('touchmove', handleMove as EventListener);
       canvas.removeEventListener('touchend', handleEnd);
-      canvas.removeEventListener('mousedown', handleStart);
-      canvas.removeEventListener('mousemove', handleMove);
+      canvas.removeEventListener('mousedown', handleStart as EventListener);
+      canvas.removeEventListener('mousemove', handleMove as EventListener);
       canvas.removeEventListener('mouseup', handleEnd);
-      canvas.removeEventListener('mouseleave', handleEnd);
     };
-  }, [isPlaying]);
+  }, [isPlaying, updatePlayerPosition]);
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4'>
