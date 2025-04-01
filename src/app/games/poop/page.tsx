@@ -261,23 +261,25 @@ export default function PoopGamePage() {
   }, [isPlaying, updatePlayerPosition]);
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4'>
+    <div className='fixed inset-0 flex flex-col items-center justify-center bg-gray-900 overflow-hidden touch-none pt-16 pb-8'>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className='text-center mb-8'>
-        <h1 className='text-4xl font-bold mb-2 bg-gradient-to-r from-amber-500 to-orange-500 text-transparent bg-clip-text'>
+        className='text-center mb-4'>
+        <h1 className='text-3xl font-bold mb-1 bg-gradient-to-r from-amber-500 to-orange-500 text-transparent bg-clip-text'>
           똥피하기
         </h1>
-        <p className='text-gray-400'>하늘에서 떨어지는 똥을 피하세요!</p>
+        <p className='text-sm text-gray-400'>
+          하늘에서 떨어지는 똥을 피하세요!
+        </p>
       </motion.div>
 
-      <div className='relative'>
+      <div className='relative w-full max-w-[400px] px-4 flex-shrink-0'>
         <canvas
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          className='border-2 border-gray-700 rounded-lg bg-gray-800'
+          className='w-full h-auto border-2 border-gray-700 rounded-lg bg-gray-800 touch-none'
         />
 
         {!isPlaying && (
@@ -287,30 +289,30 @@ export default function PoopGamePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 onClick={startGame}
-                className='px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-white font-bold text-lg hover:from-amber-600 hover:to-orange-600 transition-colors'>
+                className='px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-white font-bold text-lg hover:from-amber-600 hover:to-orange-600 transition-colors'>
                 게임 시작
               </motion.button>
             ) : (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className='text-center'>
-                <h2 className='text-2xl font-bold text-white mb-4'>
+                className='text-center p-4'>
+                <h2 className='text-xl font-bold text-white mb-2'>
                   게임 오버!
                 </h2>
-                <p className='text-xl text-gray-200 mb-2'>점수: {score}</p>
-                <p className='text-lg text-gray-300 mb-4'>
+                <p className='text-lg text-gray-200 mb-1'>점수: {score}</p>
+                <p className='text-base text-gray-300 mb-3'>
                   최고 점수: {highScore}
                 </p>
-                <div className='flex gap-4 justify-center'>
+                <div className='flex gap-2 justify-center'>
                   <button
                     onClick={startGame}
-                    className='px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-white font-bold hover:from-amber-600 hover:to-orange-600 transition-colors'>
+                    className='px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg text-white font-bold hover:from-amber-600 hover:to-orange-600 transition-colors text-sm'>
                     다시 시작
                   </button>
                   <button
                     onClick={() => router.push('/rankings?game=poop')}
-                    className='px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg text-white font-bold hover:from-blue-600 hover:to-purple-600 transition-colors'>
+                    className='px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg text-white font-bold hover:from-blue-600 hover:to-purple-600 transition-colors text-sm'>
                     랭킹 보기
                   </button>
                 </div>
@@ -322,19 +324,19 @@ export default function PoopGamePage() {
 
       <div className='mt-4 flex gap-4 text-white'>
         <div className='bg-gray-800 px-4 py-2 rounded-lg'>
-          <p className='text-sm text-gray-400'>점수</p>
-          <p className='text-xl font-bold'>{score}</p>
+          <p className='text-xs text-gray-400'>점수</p>
+          <p className='text-lg font-bold'>{score}</p>
         </div>
         <div className='bg-gray-800 px-4 py-2 rounded-lg'>
-          <p className='text-sm text-gray-400'>최고 점수</p>
-          <p className='text-xl font-bold'>{highScore}</p>
+          <p className='text-xs text-gray-400'>최고 점수</p>
+          <p className='text-lg font-bold'>{highScore}</p>
         </div>
       </div>
 
-      <div className='mt-8 text-gray-400 text-center'>
-        <h3 className='font-bold mb-2'>조작 방법</h3>
-        <p>← → : 좌우 이동</p>
-        <p>터치/마우스 : 드래그로 이동</p>
+      <div className='mt-4 text-gray-400 text-center'>
+        <h3 className='font-bold mb-1 text-sm'>조작 방법</h3>
+        <p className='text-xs'>← → : 좌우 이동</p>
+        <p className='text-xs'>터치/마우스 : 드래그로 이동</p>
       </div>
     </div>
   );
