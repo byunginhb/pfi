@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 두더지 몸통 -->
+  <circle cx="100" cy="120" r="60" fill="#8B4513"/>
+  <!-- 두더지 얼굴 -->
+  <circle cx="100" cy="100" r="40" fill="#A0522D"/>
+  <!-- 왼쪽 눈 (X 모양) -->
+  <line x1="75" y1="80" x2="95" y2="100" stroke="black" stroke-width="3"/>
+  <line x1="95" y1="80" x2="75" y2="100" stroke="black" stroke-width="3"/>
+  <!-- 오른쪽 눈 (X 모양) -->
+  <line x1="105" y1="80" x2="125" y2="100" stroke="black" stroke-width="3"/>
+  <line x1="125" y1="80" x2="105" y2="100" stroke="black" stroke-width="3"/>
+  <!-- 코 -->
+  <circle cx="100" cy="100" r="8" fill="black"/>
+  <!-- 볼 -->
+  <circle cx="80" cy="100" r="10" fill="#CD853F" fill-opacity="0.5"/>
+  <circle cx="120" cy="100" r="10" fill="#CD853F" fill-opacity="0.5"/>
+  <!-- 별 효과 -->
+  <path d="M160 40 L165 50 L175 52 L165 60 L168 70 L160 65 L152 70 L155 60 L145 52 L155 50 Z" fill="yellow"/>
+  <path d="M40 40 L45 50 L55 52 L45 60 L48 70 L40 65 L32 70 L35 60 L25 52 L35 50 Z" fill="yellow"/>
+</svg> 

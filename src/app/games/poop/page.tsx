@@ -13,7 +13,7 @@ const POOP_SIZE = 30;
 const INITIAL_SPEED = 7;
 const MAX_SPEED = 12;
 const SPEED_INCREMENT = 0.002;
-const POOP_SPAWN_RATE = 0.03;
+const POOP_SPAWN_RATE = 0.15;
 
 // 게임 객체 인터페이스
 interface GameObject {
