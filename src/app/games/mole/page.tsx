@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { saveScore } from '@/utils/score';
 import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
 
@@ -160,14 +161,17 @@ export default function MolePage() {
             left: mole.position.left,
           }}
           onClick={() => handleMoleClick(mole)}>
-          <img
+          <Image
             src={
               mole.isGolden
                 ? '/images/mole-golden.svg'
                 : '/images/mole-normal.svg'
             }
             alt='두더지'
-            className='w-24 h-24 drop-shadow-lg'
+            width={96}
+            height={96}
+            className='drop-shadow-lg'
+            priority
           />
         </div>
       ))}

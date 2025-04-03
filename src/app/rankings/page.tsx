@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { GAME_TYPES, formatScore } from '@/utils/score';
 
+type GameType = keyof typeof GAME_TYPES;
+
 interface Ranking {
   id: string;
   nickname: string;
+  type: GameType;
   score: number;
   createdAt: string;
 }
@@ -19,11 +22,11 @@ interface RankingsResponse {
   totalPages: number;
 }
 
-export default function RankingsPage() {
+function RankingsContent() {
   const searchParams = useSearchParams();
   const [rankings, setRankings] = useState<Ranking[]>([]);
-  const [selectedGame, setSelectedGame] = useState(
-    searchParams.get('gameType') || 'reaction'
+  const [selectedGame, setSelectedGame] = useState<GameType>(
+    (searchParams.get('gameType') as GameType) || 'reaction'
   );
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +67,7 @@ export default function RankingsPage() {
             {Object.entries(GAME_TYPES).map(([type, label]) => (
               <button
                 key={type}
-                onClick={() => setSelectedGame(type)}
+                onClick={() => setSelectedGame(type as GameType)}
                 className={`px-4 py-2 rounded-full transition-colors ${
                   selectedGame === type
                     ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
@@ -155,5 +158,13 @@ export default function RankingsPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function RankingsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RankingsContent />
+    </Suspense>
   );
 }
