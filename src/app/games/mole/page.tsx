@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveScore } from '@/utils/score';
+import { SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
 
 interface Mole {
   id: number;
@@ -20,6 +21,8 @@ export default function MolePage() {
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const [moles, setMoles] = useState<Mole[]>([]);
+  const [isMuted, setIsMuted] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [hitSound] = useState(() =>
     typeof window !== 'undefined' ? new Audio('/sounds/hit.mp3') : null
   );
@@ -29,6 +32,29 @@ export default function MolePage() {
   const [gameStartSound] = useState(() =>
     typeof window !== 'undefined' ? new Audio('/sounds/game-start.mp3') : null
   );
+
+  // 윈도우 크기 업데이트
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    // 초기 크기 설정
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 음소거 상태 변경 시 모든 오디오에 적용
+  useEffect(() => {
+    if (hitSound) hitSound.muted = isMuted;
+    if (goldenHitSound) goldenHitSound.muted = isMuted;
+    if (gameStartSound) gameStartSound.muted = isMuted;
+  }, [isMuted, hitSound, goldenHitSound, gameStartSound]);
 
   const handleMoleClick = useCallback(
     (mole: Mole) => {
@@ -50,14 +76,16 @@ export default function MolePage() {
   const spawnMole = useCallback(() => {
     if (gameOver) return;
 
-    const isGolden = Math.random() < 0.4; // 20% 확률로 황금 두더지 출현
+    const isGolden = Math.random() < 0.2; // 20% 확률로 황금 두더지 출현
+    const padding = 100; // 화면 가장자리 여백
+
     const newMole: Mole = {
       id: Date.now(),
       isVisible: true,
       isGolden,
       position: {
-        top: Math.random() * (window.innerHeight - 100),
-        left: Math.random() * (window.innerWidth - 100),
+        top: padding + Math.random() * (windowSize.height - padding * 2 - 100),
+        left: padding + Math.random() * (windowSize.width - padding * 2 - 100),
       },
     };
 
@@ -67,7 +95,7 @@ export default function MolePage() {
     setTimeout(() => {
       setMoles((prev) => prev.filter((m) => m.id !== newMole.id));
     }, 2000);
-  }, [gameOver]);
+  }, [gameOver, windowSize]);
 
   useEffect(() => {
     const nickname = localStorage.getItem('nickname');
@@ -78,7 +106,7 @@ export default function MolePage() {
     }
 
     gameStartSound?.play();
-    const spawnInterval = setInterval(spawnMole, 1000);
+    const spawnInterval = setInterval(spawnMole, 500); // 0.5초마다 40% 확률로 생성
     const timeInterval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -87,7 +115,7 @@ export default function MolePage() {
           setGameOver(true);
           const nickname = localStorage.getItem('nickname');
           if (nickname) {
-            saveScore('mole', score, nickname);
+            saveScore('mole', score);
           }
           return 0;
         }
@@ -102,13 +130,27 @@ export default function MolePage() {
   }, [router, score, spawnMole, gameStartSound]);
 
   return (
-    <div className='relative w-full h-screen bg-green-200 overflow-hidden'>
-      <div className='absolute top-4 left-4 text-2xl font-bold'>
+    <div
+      className='relative w-full h-screen overflow-hidden'
+      style={{
+        background: `url('/images/grass-pattern.svg') repeat`,
+        backgroundSize: '100px 100px',
+      }}>
+      <div className='absolute top-20 left-4 text-2xl font-bold text-white drop-shadow-lg'>
         점수: {score}
       </div>
-      <div className='absolute top-4 right-4 text-2xl font-bold'>
+      <div className='absolute top-20 right-4 text-2xl font-bold text-white drop-shadow-lg'>
         시간: {timeLeft}초
       </div>
+      <button
+        onClick={() => setIsMuted((prev) => !prev)}
+        className='absolute top-32 right-4 p-2 rounded-full bg-white/80 hover:bg-white transition-colors'>
+        {isMuted ? (
+          <SpeakerXMarkIcon className='w-6 h-6 text-gray-800' />
+        ) : (
+          <SpeakerWaveIcon className='w-6 h-6 text-gray-800' />
+        )}
+      </button>
       {moles.map((mole) => (
         <div
           key={mole.id}
@@ -125,7 +167,7 @@ export default function MolePage() {
                 : '/images/mole-normal.svg'
             }
             alt='두더지'
-            className='w-24 h-24'
+            className='w-24 h-24 drop-shadow-lg'
           />
         </div>
       ))}
