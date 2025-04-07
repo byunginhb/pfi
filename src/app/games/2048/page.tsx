@@ -219,11 +219,13 @@ export default function Game2048() {
   }, [handleMove, router]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
     const touch = e.touches[0];
     setTouchStart([touch.clientX, touch.clientY]);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
     if (!touchStart) return;
 
     const touch = e.changedTouches[0];
@@ -244,7 +246,7 @@ export default function Game2048() {
   };
 
   return (
-    <div className='flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#faf8ef] p-4'>
+    <div className='flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#faf8ef] p-4 touch-none'>
       <div className='w-full max-w-md'>
         <div className='flex justify-between items-center mb-4'>
           <h1 className='text-4xl font-bold text-[#776e65]'>2048</h1>
