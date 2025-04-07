@@ -4,6 +4,7 @@ export const GAME_TYPES = {
   '2048': '2048',
   poop: '똥 피하기',
   mole: '두더지 잡기',
+  runner: '러너 게임',
 } as const;
 
 type GameType = keyof typeof GAME_TYPES;

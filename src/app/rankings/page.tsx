@@ -5,6 +5,15 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { GAME_TYPES, formatScore } from '@/utils/score';
 
+const GAME_TYPES = {
+  reaction: '리액션 테스트',
+  memory: '카드 매칭',
+  '2048': '2048',
+  poop: '똥피하기',
+  mole: '두더지 잡기',
+  runner: '러너 게임',
+} as const;
+
 type GameType = keyof typeof GAME_TYPES;
 
 interface Ranking {
@@ -29,16 +38,28 @@ function RankingsContent() {
     (searchParams.get('gameType') as GameType) || 'reaction'
   );
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const gameTypes = [
+    { id: 'reaction', name: '리액션 테스트' },
+    { id: 'memory', name: '카드 매칭' },
+    { id: '2048', name: '2048' },
+    { id: 'poop', name: '똥피하기' },
+    { id: 'mole', name: '두더지 잡기' },
+    { id: 'runner', name: '러너 게임' },
+  ];
 
   useEffect(() => {
     const fetchRankings = async () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/rankings?gameType=${selectedGame}&page=1&limit=10`
+          `/api/rankings?gameType=${selectedGame}&page=${currentPage}&limit=10`
         );
         const data: RankingsResponse = await response.json();
         setRankings(data.scores || []);
+        setTotalPages(data.totalPages);
       } catch (error) {
         console.error('랭킹을 불러오는데 실패했습니다:', error);
         setRankings([]);
@@ -47,7 +68,12 @@ function RankingsContent() {
     };
 
     fetchRankings();
-  }, [selectedGame]);
+  }, [selectedGame, currentPage]);
+
+  const handleGameChange = (gameType: GameType) => {
+    setSelectedGame(gameType);
+    setCurrentPage(1); // 게임 변경 시 첫 페이지로 이동
+  };
 
   return (
     <main className='container mx-auto px-4 py-8 mt-16'>
@@ -64,16 +90,16 @@ function RankingsContent() {
           </p>
 
           <div className='flex flex-wrap gap-2 justify-center mb-8'>
-            {Object.entries(GAME_TYPES).map(([type, label]) => (
+            {gameTypes.map((game) => (
               <button
-                key={type}
-                onClick={() => setSelectedGame(type as GameType)}
+                key={game.id}
+                onClick={() => handleGameChange(game.id as GameType)}
                 className={`px-4 py-2 rounded-full transition-colors ${
-                  selectedGame === type
+                  selectedGame === game.id
                     ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}>
-                {label}
+                {game.name}
               </button>
             ))}
           </div>
@@ -154,6 +180,63 @@ function RankingsContent() {
                 </tbody>
               </table>
             </div>
+
+            {/* 페이지네이션 UI */}
+            {!loading && rankings.length > 0 && (
+              <div className='flex justify-center items-center gap-2 p-4 border-t border-gray-100'>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
+                  이전
+                </button>
+                <div className='flex items-center gap-2'>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}>
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === totalPages
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
+                  다음
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

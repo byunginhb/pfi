@@ -10,6 +10,7 @@ import {
   CloudIcon,
   CursorArrowRaysIcon,
   TrophyIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -48,6 +49,13 @@ const games = [
     description: '두더지를 재빨리 잡아보세요!',
     color: 'from-yellow-400 to-yellow-600',
     icon: CursorArrowRaysIcon,
+  },
+  {
+    id: 'runner',
+    title: '러너 게임',
+    description: '장애물을 피하고 코인을 모으세요!',
+    color: 'from-green-400 to-emerald-600',
+    icon: ArrowPathIcon,
   },
   // 추후 더 많은 게임들이 추가될 예정
 ];
