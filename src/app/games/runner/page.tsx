@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 
 // 게임 상수
 const GAME_WIDTH = 800;
@@ -35,12 +34,9 @@ interface Player {
 }
 
 export default function RunnerGame() {
-  const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [highScore, setHighScore] = useState(0);
 
   // 게임 상태
   const gameStateRef = useRef({
@@ -58,6 +54,7 @@ export default function RunnerGame() {
     objects: [] as GameObject[],
     distance: 0,
     frameCount: 0,
+    score: 0,
   });
 
   // 게임 초기화
@@ -77,8 +74,8 @@ export default function RunnerGame() {
       objects: [],
       distance: 0,
       frameCount: 0,
+      score: 0,
     };
-    setScore(0);
     setGameOver(false);
     setIsPlaying(true);
   }, []);
@@ -168,16 +165,16 @@ export default function RunnerGame() {
 
       // 파워업 생성
       if (state.frameCount % 300 === 0) {
-        const powerupTypes = ['⭐', '🦋', '🧲'];
-        const randomPowerup =
-          powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+        const powerUpTypes = ['⭐', '🦋', '🧲'];
+        const randomPowerUp =
+          powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
         objects.push({
           x: GAME_WIDTH,
           y: Math.random() * (GAME_HEIGHT - 100),
           width: 25,
           height: 25,
           type: 'powerup',
-          emoji: randomPowerup,
+          emoji: randomPowerUp,
           active: true,
         });
       }
@@ -197,7 +194,7 @@ export default function RunnerGame() {
           if (obj.type === 'obstacle' && !player.isInvincible) {
             handleGameOver();
           } else if (obj.type === 'coin') {
-            setScore((prev) => prev + 10);
+            state.score += 10;
             obj.active = false;
           } else if (obj.type === 'powerup') {
             switch (obj.emoji) {

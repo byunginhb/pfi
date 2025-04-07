@@ -5,15 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { GAME_TYPES, formatScore } from '@/utils/score';
 
-const GAME_TYPES = {
-  reaction: '리액션 테스트',
-  memory: '카드 매칭',
-  '2048': '2048',
-  poop: '똥피하기',
-  mole: '두더지 잡기',
-  runner: '러너 게임',
-} as const;
-
 type GameType = keyof typeof GAME_TYPES;
 
 interface Ranking {
