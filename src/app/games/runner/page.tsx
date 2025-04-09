@@ -55,6 +55,7 @@ export default function RunnerGame() {
     distance: 0,
     frameCount: 0,
     score: 0,
+    coinScore: 0,
   });
 
   // 게임 초기화
@@ -75,6 +76,7 @@ export default function RunnerGame() {
       distance: 0,
       frameCount: 0,
       score: 0,
+      coinScore: 0,
     };
     setGameOver(false);
     setIsPlaying(true);
@@ -107,7 +109,9 @@ export default function RunnerGame() {
           body: JSON.stringify({
             nickname,
             gameType: 'runner',
-            score: Math.floor(gameStateRef.current.distance / 10),
+            score:
+              Math.floor(gameStateRef.current.distance / 10) +
+              gameStateRef.current.coinScore,
           }),
         });
       } catch (error) {
@@ -154,7 +158,7 @@ export default function RunnerGame() {
       if (state.frameCount % 100 === 0) {
         objects.push({
           x: GAME_WIDTH,
-          y: Math.random() * (GAME_HEIGHT - 100),
+          y: GAME_HEIGHT - 100 + Math.random() * 50,
           width: 20,
           height: 20,
           type: 'coin',
@@ -170,7 +174,7 @@ export default function RunnerGame() {
           powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
         objects.push({
           x: GAME_WIDTH,
-          y: Math.random() * (GAME_HEIGHT - 100),
+          y: GAME_HEIGHT - 100 + Math.random() * 50,
           width: 25,
           height: 25,
           type: 'powerup',
@@ -194,7 +198,7 @@ export default function RunnerGame() {
           if (obj.type === 'obstacle' && !player.isInvincible) {
             handleGameOver();
           } else if (obj.type === 'coin') {
-            state.score += 10;
+            state.coinScore += 10;
             obj.active = false;
           } else if (obj.type === 'powerup') {
             switch (obj.emoji) {
@@ -224,8 +228,8 @@ export default function RunnerGame() {
           const dy = player.y - obj.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 150) {
-            obj.x += dx * 0.1;
-            obj.y += dy * 0.1;
+            obj.x += dx * 0.3;
+            obj.y += dy * 0.3;
           }
         }
       });
@@ -263,7 +267,9 @@ export default function RunnerGame() {
       // 점수
       ctx.font = '20px Arial';
       ctx.fillStyle = 'black';
-      ctx.fillText(`Score: ${Math.floor(state.distance / 10)}`, 10, 30);
+      const totalScore = Math.floor(state.distance / 10) + state.coinScore;
+      ctx.fillText(`Score: ${totalScore}`, 10, 30);
+      ctx.fillText(`Coins: ${state.coinScore}`, 10, 60);
     },
     [handleGameOver]
   );
@@ -330,7 +336,9 @@ export default function RunnerGame() {
         <div className='flex justify-between items-center mb-4'>
           <h1 className='text-2xl font-bold text-gray-800'>Runner Game</h1>
           <div className='text-lg font-semibold text-gray-600'>
-            Score: {Math.floor(gameStateRef.current.distance / 10)}
+            Score:{' '}
+            {Math.floor(gameStateRef.current.distance / 10) +
+              gameStateRef.current.coinScore}
           </div>
         </div>
 
@@ -351,7 +359,9 @@ export default function RunnerGame() {
                       게임 오버!
                     </h2>
                     <p className='text-xl text-white mb-4'>
-                      점수: {Math.floor(gameStateRef.current.distance / 10)}
+                      점수:{' '}
+                      {Math.floor(gameStateRef.current.distance / 10) +
+                        gameStateRef.current.coinScore}
                     </p>
                   </>
                 ) : (
