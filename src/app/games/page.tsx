@@ -57,6 +57,13 @@ const games = [
     color: 'from-green-400 to-emerald-600',
     icon: ArrowPathIcon,
   },
+  {
+    id: 'flappy',
+    title: 'Flappy Bird',
+    description: '파이프 사이를 통과하여 날아가세요!',
+    color: 'from-sky-400 to-blue-600',
+    icon: CloudIcon,
+  },
   // 추후 더 많은 게임들이 추가될 예정
 ];
 

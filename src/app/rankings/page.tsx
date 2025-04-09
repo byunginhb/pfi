@@ -39,6 +39,7 @@ function RankingsContent() {
     { id: 'poop', name: '똥피하기' },
     { id: 'mole', name: '두더지 잡기' },
     { id: 'runner', name: '러너 게임' },
+    { id: 'flappy', name: 'Flappy Bird' },
   ];
 
   useEffect(() => {

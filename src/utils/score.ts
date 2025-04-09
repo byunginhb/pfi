@@ -5,6 +5,7 @@ export const GAME_TYPES = {
   poop: '똥 피하기',
   mole: '두더지 잡기',
   runner: '러너 게임',
+  flappy: 'Flappy Bird',
 } as const;
 
 type GameType = keyof typeof GAME_TYPES;
@@ -20,6 +21,10 @@ export const formatScore = (type: GameType, score: number): string => {
     case 'poop':
       return `${score}점`;
     case 'mole':
+      return `${score}점`;
+    case 'runner':
+      return `${score}점`;
+    case 'flappy':
       return `${score}점`;
     default:
       return `${score}점`;
