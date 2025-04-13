@@ -11,6 +11,7 @@ import {
   CursorArrowRaysIcon,
   TrophyIcon,
   ArrowPathIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -63,6 +64,13 @@ const games = [
     description: '파이프 사이를 통과하여 날아가세요!',
     color: 'from-sky-400 to-blue-600',
     icon: CloudIcon,
+  },
+  {
+    id: 'shooter',
+    title: 'Space Shooter',
+    description: '적을 물리치고 아이템을 수집하세요!',
+    color: 'from-indigo-400 to-violet-600',
+    icon: RocketLaunchIcon,
   },
   // 추후 더 많은 게임들이 추가될 예정
 ];
