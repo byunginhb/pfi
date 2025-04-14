@@ -559,25 +559,62 @@ export default function ShooterGame() {
     };
   }, [isPlaying, gameOver, updateGame]);
 
-  // 마우스 이동 처리
+  // 마우스/터치 이동 처리
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let isDragging = false;
+    let lastTouchX = 0;
+
+    const updatePlayerPosition = (clientX: number) => {
       if (!isPlaying || gameOver) return;
 
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
       const rect = canvas.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) * GAME_WIDTH) / rect.width;
+      const x = ((clientX - rect.left) * GAME_WIDTH) / rect.width;
       gameStateRef.current.player.x = Math.max(
         PLAYER_SIZE / 2,
         Math.min(GAME_WIDTH - PLAYER_SIZE / 2, x)
       );
     };
 
+    // 마우스 이벤트 핸들러
+    const handleMouseMove = (e: MouseEvent) => {
+      updatePlayerPosition(e.clientX);
+    };
+
+    // 터치 이벤트 핸들러
+    const handleTouchStart = (e: TouchEvent) => {
+      isDragging = true;
+      lastTouchX = e.touches[0].clientX;
+      updatePlayerPosition(lastTouchX);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      e.preventDefault(); // 스크롤 방지
+      lastTouchX = e.touches[0].clientX;
+      updatePlayerPosition(lastTouchX);
+    };
+
+    const handleTouchEnd = () => {
+      isDragging = false;
+    };
+
+    // 이벤트 리스너 등록
     document.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchcancel', handleTouchEnd);
+
     return () => {
+      // 이벤트 리스너 제거
       document.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchcancel', handleTouchEnd);
     };
   }, [isPlaying, gameOver]);
 
