@@ -633,7 +633,7 @@ export default function ShooterGame() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4'>
-      <div className='w-full max-w-[1024px] bg-white rounded-lg shadow-lg p-4'>
+      <div className='w-full max-w-[1280px] bg-white rounded-lg shadow-lg p-2'>
         <div className='flex justify-between items-center mb-4'>
           <h1 className='text-2xl font-bold text-gray-800'>Space Shooter</h1>
           <div className='text-lg font-semibold text-gray-600'>
