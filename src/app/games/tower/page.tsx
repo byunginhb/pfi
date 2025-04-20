@@ -207,14 +207,27 @@ export default function TowerDefensePage() {
 
     contextRef.current = ctx;
 
+    // 화면 크기에 따른 캔버스 크기 조정
+    const updateCanvasSize = () => {
+      const isMobile = window.innerWidth < 768;
+      const width = isMobile ? Math.min(window.innerWidth - 32, 600) : 800;
+      const height = width * 0.75; // 4:3 비율 유지
+
+      canvas.width = width;
+      canvas.height = height;
+      gameStateRef.current.centerX = width / 2;
+      gameStateRef.current.centerY = height / 2;
+      gameStateRef.current.pathRadius = Math.min(width, height) * 0.25; // 화면 크기에 따른 경로 반경 조정
+    };
+
+    // 초기 크기 설정
+    updateCanvasSize();
+
+    // 화면 크기 변경 시 캔버스 크기 업데이트
+    window.addEventListener('resize', updateCanvasSize);
+
     // cleanup 함수에서 사용할 변수들을 ref로 저장
     const currentCanvas = canvas;
-
-    canvas.width = 800;
-    canvas.height = 600;
-
-    gameStateRef.current.centerX = canvas.width / 2;
-    gameStateRef.current.centerY = canvas.height / 2;
 
     function handleTowerInteraction(e: MouseEvent | TouchEvent) {
       if (gameStateRef.current.gameOver) return;
@@ -554,6 +567,7 @@ export default function TowerDefensePage() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', updateCanvasSize);
       if (currentCanvas) {
         currentCanvas.removeEventListener('click', handleTowerInteraction);
         currentCanvas.removeEventListener('touchstart', handleTowerInteraction);
@@ -563,74 +577,53 @@ export default function TowerDefensePage() {
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4'>
-      {showTutorial && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50'>
-          <div className='bg-white p-8 rounded-lg text-center max-w-lg'>
-            <h2 className='text-2xl font-bold mb-4'>게임 설명서</h2>
-            <div className='text-left space-y-3 mb-6'>
-              <p className='font-semibold text-lg mb-2'>🎮 기본 규칙</p>
-              <p>- 적 100마리가 쌓이면 게임이 종료됩니다</p>
-              <p>- 적을 처치하면 골드와 점수를 획득합니다</p>
-              <p>- 웨이브가 올라갈수록 적의 체력이 증가합니다</p>
-
-              <p className='font-semibold text-lg mt-4 mb-2'>🏰 타워 설치</p>
-              <p>1. 원하는 타워 유형을 선택합니다</p>
-              <p>2. 화면을 클릭하여 타워를 설치합니다</p>
-
-              <p className='font-semibold text-lg mt-4 mb-2'>⚔️ 타워 종류</p>
-              <ul className='list-disc pl-6 space-y-2'>
-                {Object.entries(TOWER_TYPES).map(([key, value]) => (
-                  <li key={key} className='flex items-center justify-between'>
-                    <span>
-                      {value.name} - {value.description}
-                    </span>
-                    <span className='text-gray-600'>{value.baseCost} 골드</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className='font-semibold text-lg mt-4 mb-2'>
-                🔧 타워 업그레이드
-              </p>
-              <p>1. 설치된 타워를 클릭하면 업그레이드 창이 열립니다</p>
-              <p>
-                2. 원하는 능력치(공격력/사거리/공격속도)를 강화할 수 있습니다
-              </p>
-              <p>3. 불필요한 타워는 판매할 수 있습니다</p>
-            </div>
-            <button
-              onClick={() => setShowTutorial(false)}
-              className='px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold'>
-              게임 시작
-            </button>
+      <div className='w-full max-w-full overflow-x-auto mb-4'>
+        <div className='flex flex-wrap gap-2 items-center justify-center md:flex-nowrap'>
+          <div className='flex items-center gap-2 text-white text-sm md:text-base'>
+            <span>웨이브: {wave}</span>
+            <span>적 수: {gameStateRef.current.enemies.length}/100</span>
+            <span>점수: {score}</span>
+            <span>골드: {gold}</span>
           </div>
-        </motion.div>
-      )}
-      <div className='mb-4 flex gap-4 items-center'>
-        <div className='text-white'>웨이브: {wave}</div>
-        <div className='text-white'>
-          적 수: {gameStateRef.current.enemies.length}/100
+          <select
+            value={selectedTowerType}
+            onChange={(e) =>
+              setSelectedTowerType(e.target.value as keyof typeof TOWER_TYPES)
+            }
+            className='px-2 py-1 rounded bg-gray-700 text-white text-sm md:text-base'>
+            {Object.entries(TOWER_TYPES).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.name} ({value.baseCost} 골드)
+              </option>
+            ))}
+          </select>
         </div>
-        <div className='text-white'>점수: {score}</div>
-        <div className='text-white'>골드: {gold}</div>
-        <select
-          value={selectedTowerType}
-          onChange={(e) =>
-            setSelectedTowerType(e.target.value as keyof typeof TOWER_TYPES)
-          }
-          className='px-2 py-1 rounded bg-gray-700 text-white'>
-          {Object.entries(TOWER_TYPES).map(([key, value]) => (
-            <option key={key} value={key}>
-              {value.name} ({value.baseCost} 골드)
-            </option>
-          ))}
-        </select>
 
-        {/* 웨이브 진행/스킵 버튼 */}
-        <div className='flex gap-2'>
+        {/* 웨이브 진행 상태 및 스킵 버튼 */}
+        <div className='flex flex-wrap items-center justify-center gap-3 mt-3'>
+          <div className='flex items-center gap-2'>
+            <div className='h-2 w-32 bg-gray-700 rounded-full overflow-hidden'>
+              <div
+                className='h-full bg-blue-500 transition-all duration-300'
+                style={{
+                  width: `${
+                    (gameStateRef.current.waveProgress /
+                      gameStateRef.current.maxWaveEnemies) *
+                    100
+                  }%`,
+                }}
+              />
+            </div>
+            <span className='text-white text-sm'>
+              {Math.floor(
+                (gameStateRef.current.waveProgress /
+                  gameStateRef.current.maxWaveEnemies) *
+                  100
+              )}
+              %
+            </span>
+          </div>
+
           <button
             onClick={() => {
               // 현재 웨이브의 남은 적을 모두 생성
@@ -654,163 +647,135 @@ export default function TowerDefensePage() {
                 10 + (wave + 1) * 2
               );
             }}
-            className='px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors flex items-center gap-2'>
-            <ArrowPathIcon className='w-5 h-5' />
-            다음 웨이브로 스킵
+            className='px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors flex items-center gap-1.5 text-sm md:text-base'>
+            <ArrowPathIcon className='w-4 h-4 md:w-5 md:h-5' />
+            다음 웨이브
           </button>
         </div>
-
-        {/* 웨이브 진행 상태 표시 */}
-        <div className='flex items-center gap-2'>
-          <div className='h-2 w-32 bg-gray-700 rounded-full overflow-hidden'>
-            <div
-              className='h-full bg-blue-500 transition-all duration-300'
-              style={{
-                width: `${
-                  (gameStateRef.current.waveProgress /
-                    gameStateRef.current.maxWaveEnemies) *
-                  100
-                }%`,
-              }}
-            />
-          </div>
-          <span className='text-white text-sm'>
-            {Math.floor(
-              (gameStateRef.current.waveProgress /
-                gameStateRef.current.maxWaveEnemies) *
-                100
-            )}
-            %
-          </span>
-        </div>
       </div>
-      <canvas
-        ref={canvasRef}
-        className='border border-gray-600 rounded-lg cursor-pointer'
-        style={{ touchAction: 'none' }}
-      />
 
-      {selectedTower && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50'
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedTower(null);
-          }}>
-          <div
-            className='bg-white p-6 rounded-lg shadow-xl max-w-md w-full'
-            onClick={(e) => e.stopPropagation()}>
-            <div className='flex justify-between items-center mb-4'>
-              <h3 className='text-xl font-bold'>
-                {TOWER_TYPES[selectedTower.type].name} (레벨{' '}
-                {selectedTower.level})
-              </h3>
-              <button
-                onClick={() => setSelectedTower(null)}
-                className='text-gray-500 hover:text-gray-700'>
-                ✕
-              </button>
-            </div>
+      <div className='relative'>
+        <canvas
+          ref={canvasRef}
+          className='border border-gray-600 rounded-lg cursor-pointer max-w-full'
+          style={{ touchAction: 'none' }}
+        />
 
-            <div className='space-y-4'>
-              {/* 현재 스탯 */}
-              <div className='bg-gray-50 p-3 rounded'>
-                <h4 className='font-semibold mb-2'>현재 스탯</h4>
-                <div className='grid grid-cols-2 gap-2 text-sm'>
-                  <div>데미지: {selectedTower.damage}</div>
-                  <div>공격 범위: {selectedTower.range}</div>
-                  <div>
-                    공격 속도: {(1000 / selectedTower.attackSpeed).toFixed(1)}
-                    회/초
-                  </div>
-                  <div>총 처치: {selectedTower.kills || 0}마리</div>
-                </div>
-              </div>
-
-              {/* 업그레이드 옵션 */}
-              <div className='space-y-2'>
-                <h4 className='font-semibold'>업그레이드</h4>
-                {Object.entries(TOWER_TYPES[selectedTower.type].upgrades).map(
-                  ([key, upgrade]) => {
-                    const cost = Math.floor(selectedTower.cost * upgrade.cost);
-                    const currentGold = gold;
-                    const canAfford = currentGold >= cost;
-
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => {
-                          if (canAfford) {
-                            const tower = selectedTower;
-                            setGold(currentGold - cost);
-
-                            // 레벨 증가
-                            tower.level += 1;
-
-                            switch (key) {
-                              case 'damage':
-                                tower.damage = Math.floor(
-                                  tower.damage * upgrade.increase
-                                );
-                                break;
-                              case 'range':
-                                tower.range = Math.floor(
-                                  tower.range * upgrade.increase
-                                );
-                                break;
-                              case 'speed':
-                                tower.attackSpeed = Math.floor(
-                                  tower.attackSpeed * upgrade.increase
-                                );
-                                break;
-                            }
-                            tower.cost = Math.floor(tower.cost * 1.2);
-                          }
-                        }}
-                        disabled={!canAfford}
-                        className={`w-full p-2 rounded flex justify-between items-center ${
-                          canAfford
-                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                            : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        }`}>
-                        <span>
-                          {upgrade.label} 강화 (Lv.{selectedTower.level})
-                        </span>
-                        <span>{cost} 골드</span>
-                      </button>
-                    );
-                  }
-                )}
-              </div>
-
-              {/* 판매 옵션 */}
-              <div className='mt-4 pt-4 border-t'>
+        {selectedTower && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50'>
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className='bg-white p-4 md:p-6 rounded-lg shadow-xl w-[300px] max-h-[80vh]'>
+              <div className='flex justify-between items-center mb-4'>
+                <h3 className='text-xl font-bold'>
+                  {TOWER_TYPES[selectedTower.type].name} (레벨{' '}
+                  {selectedTower.level})
+                </h3>
                 <button
-                  onClick={() => {
-                    const sellPrice = Math.floor(selectedTower.cost * 0.7);
-                    setGold((prev) => prev + sellPrice);
-                    gameStateRef.current.towers =
-                      gameStateRef.current.towers.filter(
-                        (t) => t.id !== selectedTower.id
-                      );
-                    setSelectedTower(null);
-                  }}
-                  className='w-full p-2 bg-red-500 hover:bg-red-600 text-white rounded'>
-                  타워 판매 ({Math.floor(selectedTower.cost * 0.7)} 골드)
+                  onClick={() => setSelectedTower(null)}
+                  className='text-gray-500 hover:text-gray-700'>
+                  ✕
                 </button>
               </div>
+
+              <div className='space-y-4'>
+                {/* 현재 스탯 */}
+                <div className='bg-gray-50 p-3 rounded'>
+                  <h4 className='font-semibold mb-2'>현재 스탯</h4>
+                  <div className='grid grid-cols-2 gap-2 text-sm'>
+                    <div>데미지: {selectedTower.damage}</div>
+                    <div>공격 범위: {selectedTower.range}</div>
+                    <div>
+                      공격 속도: {(1000 / selectedTower.attackSpeed).toFixed(1)}
+                      회/초
+                    </div>
+                    <div>총 처치: {selectedTower.kills || 0}마리</div>
+                  </div>
+                </div>
+
+                {/* 업그레이드 옵션 */}
+                <div className='space-y-2'>
+                  <h4 className='font-semibold'>업그레이드</h4>
+                  {Object.entries(TOWER_TYPES[selectedTower.type].upgrades).map(
+                    ([key, upgrade]) => {
+                      const cost = Math.floor(
+                        selectedTower.cost * upgrade.cost
+                      );
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => {
+                            if (gold >= cost) {
+                              setGold(gold - cost);
+                              const tower = selectedTower;
+                              tower.level += 1;
+                              switch (key) {
+                                case 'damage':
+                                  tower.damage = Math.floor(
+                                    tower.damage * upgrade.increase
+                                  );
+                                  break;
+                                case 'range':
+                                  tower.range = Math.floor(
+                                    tower.range * upgrade.increase
+                                  );
+                                  break;
+                                case 'speed':
+                                  tower.attackSpeed = Math.floor(
+                                    tower.attackSpeed * upgrade.increase
+                                  );
+                                  break;
+                              }
+                              tower.cost = Math.floor(tower.cost * 1.2);
+                            }
+                          }}
+                          disabled={gold < cost}
+                          className={`w-full p-2 rounded flex justify-between items-center ${
+                            gold >= cost
+                              ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                          }`}>
+                          <span>
+                            {upgrade.label} 강화 (Lv.{selectedTower.level})
+                          </span>
+                          <span>{cost} 골드</span>
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+
+                {/* 판매 옵션 */}
+                <div className='mt-4 pt-4 border-t'>
+                  <button
+                    onClick={() => {
+                      const sellPrice = Math.floor(selectedTower.cost * 0.7);
+                      setGold((prev) => prev + sellPrice);
+                      gameStateRef.current.towers =
+                        gameStateRef.current.towers.filter(
+                          (t) => t.id !== selectedTower.id
+                        );
+                      setSelectedTower(null);
+                    }}
+                    className='w-full p-2 bg-red-500 hover:bg-red-600 text-white rounded'>
+                    타워 판매 ({Math.floor(selectedTower.cost * 0.7)} 골드)
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </div>
+
       {gameStateRef.current.gameOver && (
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50'>
-          <div className='bg-white p-8 rounded-lg text-center max-w-md w-full'>
+          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4'>
+          <div className='bg-white p-4 md:p-8 rounded-lg text-center w-full max-w-sm mx-4'>
             <h2 className='text-2xl font-bold mb-4'>게임 오버!</h2>
             <div className='space-y-4 mb-6'>
               <p className='text-lg'>최종 점수: {score}점</p>
@@ -851,6 +816,52 @@ export default function TowerDefensePage() {
                 <div className='text-gray-600'>랭킹 저장 중...</div>
               )}
             </div>
+          </div>
+        </motion.div>
+      )}
+      {showTutorial && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4'>
+          <div className='bg-white p-4 md:p-8 rounded-lg text-center w-full max-w-lg mx-4 overflow-y-auto max-h-[90vh]'>
+            <h2 className='text-2xl font-bold mb-4'>게임 설명서</h2>
+            <div className='text-left space-y-3 mb-6'>
+              <p className='font-semibold text-lg mb-2'>🎮 기본 규칙</p>
+              <p>- 적 100마리가 쌓이면 게임이 종료됩니다</p>
+              <p>- 적을 처치하면 골드와 점수를 획득합니다</p>
+              <p>- 웨이브가 올라갈수록 적의 체력이 증가합니다</p>
+
+              <p className='font-semibold text-lg mt-4 mb-2'>🏰 타워 설치</p>
+              <p>1. 원하는 타워 유형을 선택합니다</p>
+              <p>2. 화면을 클릭하여 타워를 설치합니다</p>
+
+              <p className='font-semibold text-lg mt-4 mb-2'>⚔️ 타워 종류</p>
+              <ul className='list-disc pl-6 space-y-2'>
+                {Object.entries(TOWER_TYPES).map(([key, value]) => (
+                  <li key={key} className='flex items-center justify-between'>
+                    <span>
+                      {value.name} - {value.description}
+                    </span>
+                    <span className='text-gray-600'>{value.baseCost} 골드</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p className='font-semibold text-lg mt-4 mb-2'>
+                🔧 타워 업그레이드
+              </p>
+              <p>1. 설치된 타워를 클릭하면 업그레이드 창이 열립니다</p>
+              <p>
+                2. 원하는 능력치(공격력/사거리/공격속도)를 강화할 수 있습니다
+              </p>
+              <p>3. 불필요한 타워는 판매할 수 있습니다</p>
+            </div>
+            <button
+              onClick={() => setShowTutorial(false)}
+              className='px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold'>
+              게임 시작
+            </button>
           </div>
         </motion.div>
       )}
