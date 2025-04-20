@@ -12,6 +12,7 @@ import {
   TrophyIcon,
   ArrowPathIcon,
   RocketLaunchIcon,
+  BuildingLibraryIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
@@ -71,6 +72,13 @@ const games = [
     description: '적을 물리치고 아이템을 수집하세요!',
     color: 'from-indigo-400 to-violet-600',
     icon: RocketLaunchIcon,
+  },
+  {
+    id: 'tower',
+    title: '숫자 타워 디펜스',
+    description: '타워를 설치하고 적을 물리치세요!',
+    color: 'from-rose-400 to-pink-600',
+    icon: BuildingLibraryIcon,
   },
   // 추후 더 많은 게임들이 추가될 예정
 ];
