@@ -41,6 +41,7 @@ function RankingsContent() {
     { id: 'runner', name: '러너 게임' },
     { id: 'flappy', name: 'Flappy Bird' },
     { id: 'shooter', name: 'Space Shooter' },
+    { id: 'tower', name: '타워 디펜스' },
   ];
 
   useEffect(() => {

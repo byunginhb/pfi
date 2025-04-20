@@ -108,6 +108,32 @@ const ENEMY_TYPES = {
   },
 };
 
+// 랭킹 저장 함수 수정
+async function saveScore(nickname: string, score: number) {
+  try {
+    console.log('Saving score:', { nickname, type: 'tower', score }); // 디버깅용 로그
+    const response = await fetch('/api/rankings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nickname,
+        gameType: 'tower', // 'type' 대신 'gameType' 사용
+        score: Math.floor(score), // 점수를 정수로 변환
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '랭킹 저장에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('랭킹 저장 중 오류 발생:', error);
+    alert('랭킹 저장에 실패했습니다. 다시 시도해주세요.');
+  }
+}
+
 export default function TowerDefensePage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -119,6 +145,7 @@ export default function TowerDefensePage() {
   const [score, setScore] = useState(0);
   const [wave, setWave] = useState(1);
   const [selectedTower, setSelectedTower] = useState<Tower | null>(null);
+  const [isSubmittingScore, setIsSubmittingScore] = useState(false);
 
   const gameStateRef = useRef({
     enemies: [] as Enemy[],
@@ -782,15 +809,48 @@ export default function TowerDefensePage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className='fixed inset-0 flex items-center justify-center bg-black/50'>
-          <div className='bg-white p-8 rounded-lg text-center'>
+          className='fixed inset-0 flex items-center justify-center bg-black/50 z-50'>
+          <div className='bg-white p-8 rounded-lg text-center max-w-md w-full'>
             <h2 className='text-2xl font-bold mb-4'>게임 오버!</h2>
-            <p className='mb-4'>최종 점수: {score}</p>
-            <button
-              onClick={() => router.push('/games')}
-              className='px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600'>
-              게임 목록으로
-            </button>
+            <div className='space-y-4 mb-6'>
+              <p className='text-lg'>최종 점수: {score}점</p>
+              <p className='text-gray-600'>웨이브 {wave}까지 버티셨습니다!</p>
+              <p className='text-gray-600'>
+                처치한 적: {gameStateRef.current.enemyCount}마리
+              </p>
+            </div>
+            <div className='space-y-3'>
+              {!isSubmittingScore ? (
+                <>
+                  <button
+                    onClick={async () => {
+                      const nickname = localStorage.getItem('nickname');
+                      if (!nickname) {
+                        alert('닉네임이 설정되지 않았습니다.');
+                        router.push('/');
+                        return;
+                      }
+                      setIsSubmittingScore(true);
+                      try {
+                        await saveScore(nickname, score);
+                        router.push('/rankings?gameType=tower');
+                      } catch (error) {
+                        setIsSubmittingScore(false);
+                      }
+                    }}
+                    className='w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors'>
+                    랭킹에 기록하고 확인하기
+                  </button>
+                  <button
+                    onClick={() => router.push('/games')}
+                    className='w-full px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors'>
+                    게임 목록으로
+                  </button>
+                </>
+              ) : (
+                <div className='text-gray-600'>랭킹 저장 중...</div>
+              )}
+            </div>
           </div>
         </motion.div>
       )}
