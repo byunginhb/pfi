@@ -207,6 +207,9 @@ export default function TowerDefensePage() {
 
     contextRef.current = ctx;
 
+    // cleanup 함수에서 사용할 변수들을 ref로 저장
+    const currentCanvas = canvas;
+
     canvas.width = 800;
     canvas.height = 600;
 
@@ -551,15 +554,12 @@ export default function TowerDefensePage() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      if (canvasRef.current) {
-        canvasRef.current.removeEventListener('click', handleTowerInteraction);
-        canvasRef.current.removeEventListener(
-          'touchstart',
-          handleTowerInteraction
-        );
+      if (currentCanvas) {
+        currentCanvas.removeEventListener('click', handleTowerInteraction);
+        currentCanvas.removeEventListener('touchstart', handleTowerInteraction);
       }
     };
-  }, [router, gold, selectedTowerType, selectedTower, wave]);
+  }, [router, gold, selectedTowerType, selectedTower, wave, createEnemy]);
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4'>
@@ -834,7 +834,7 @@ export default function TowerDefensePage() {
                       try {
                         await saveScore(nickname, score);
                         router.push('/rankings?gameType=tower');
-                      } catch (error) {
+                      } catch {
                         setIsSubmittingScore(false);
                       }
                     }}
