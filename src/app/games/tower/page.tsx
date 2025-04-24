@@ -156,7 +156,8 @@ export default function TowerDefensePage() {
     centerY: 0,
     pathRadius: 150,
     waveProgress: 0,
-    maxWaveEnemies: 10,
+    maxWaveEnemies: 15,
+    scaleFactor: 1,
   });
 
   // createEnemy 함수를 useEffect 밖으로 이동
@@ -217,7 +218,19 @@ export default function TowerDefensePage() {
       canvas.height = height;
       gameStateRef.current.centerX = width / 2;
       gameStateRef.current.centerY = height / 2;
-      gameStateRef.current.pathRadius = Math.min(width, height) * 0.25; // 화면 크기에 따른 경로 반경 조정
+      gameStateRef.current.pathRadius = Math.min(width, height) * 0.25;
+      gameStateRef.current.scaleFactor = width / 800;
+
+      // 기존 타워들의 범위 조정
+      gameStateRef.current.towers.forEach((tower) => {
+        const baseRange = TOWER_TYPES[tower.type].baseRange;
+        const rangeIncrease = TOWER_TYPES[tower.type].upgrades.range.increase;
+        tower.range = Math.floor(
+          baseRange *
+            gameStateRef.current.scaleFactor *
+            Math.pow(rangeIncrease, tower.level - 1)
+        );
+      });
     };
 
     // 초기 크기 설정
@@ -275,7 +288,9 @@ export default function TowerDefensePage() {
             y,
             level: 1,
             damage: towerType.baseDamage,
-            range: towerType.baseRange,
+            range: Math.floor(
+              towerType.baseRange * gameStateRef.current.scaleFactor
+            ),
             attackSpeed: towerType.baseAttackSpeed,
             lastShot: 0,
             cost: towerType.baseCost,
@@ -529,7 +544,8 @@ export default function TowerDefensePage() {
         ) {
           setWave((prev) => prev + 1);
           gameStateRef.current.waveProgress = 0;
-          gameStateRef.current.maxWaveEnemies = Math.floor(10 + wave * 2); // 웨이브당 적 수 증가
+          // 적의 수는 고정된 값 유지
+          gameStateRef.current.maxWaveEnemies = 15;
           setGold((prev) => prev + wave * 50); // 웨이브 클리어 보상
         }
       }
@@ -643,9 +659,7 @@ export default function TowerDefensePage() {
 
               // 다음 웨이브 준비
               gameStateRef.current.waveProgress = 0;
-              gameStateRef.current.maxWaveEnemies = Math.floor(
-                10 + (wave + 1) * 2
-              );
+              gameStateRef.current.maxWaveEnemies = 15; // 고정된 적의 수로 변경
             }}
             className='px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition-colors flex items-center gap-1.5 text-sm md:text-base'>
             <ArrowPathIcon className='w-4 h-4 md:w-5 md:h-5' />
@@ -711,21 +725,36 @@ export default function TowerDefensePage() {
                             if (gold >= cost) {
                               setGold(gold - cost);
                               const tower = selectedTower;
+                              const towerType = TOWER_TYPES[tower.type];
                               tower.level += 1;
+
                               switch (key) {
                                 case 'damage':
                                   tower.damage = Math.floor(
-                                    tower.damage * upgrade.increase
+                                    towerType.baseDamage *
+                                      Math.pow(
+                                        upgrade.increase,
+                                        tower.level - 1
+                                      )
                                   );
                                   break;
                                 case 'range':
                                   tower.range = Math.floor(
-                                    tower.range * upgrade.increase
+                                    towerType.baseRange *
+                                      gameStateRef.current.scaleFactor *
+                                      Math.pow(
+                                        upgrade.increase,
+                                        tower.level - 1
+                                      )
                                   );
                                   break;
                                 case 'speed':
                                   tower.attackSpeed = Math.floor(
-                                    tower.attackSpeed * upgrade.increase
+                                    towerType.baseAttackSpeed *
+                                      Math.pow(
+                                        upgrade.increase,
+                                        tower.level - 1
+                                      )
                                   );
                                   break;
                               }
